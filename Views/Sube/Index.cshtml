@@ -1,0 +1,84 @@
+@model IEnumerable<AracKiralamaApp.Models.Sube>
+@{
+    ViewData["Title"] = "Şubeler";
+}
+
+<div class="mb-4">
+    <h1 class="text-white m-0">Çok Şubeli Yönetim</h1>
+    <p class="text-muted">Firma bünyesindeki şubeleri listeleyin, şubelerin aylık finansal giderlerini ve çalışan/araç sayılarını analiz edin.</p>
+</div>
+
+<div class="row g-4">
+    <!-- List of Branches -->
+    <div class="col-lg-8">
+        <div class="custom-card">
+            <h3 class="text-white mb-3">Aktif Şubeler</h3>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Şube Adı & Konum</th>
+                            <th>Aylık Kira</th>
+                            <th>Çalışan Sayısı</th>
+                            <th>Araç Sayısı</th>
+                            <th>Detay / Analiz</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.SubeAdi</strong>
+                                    <div class="small text-muted">@item.Sehir</div>
+                                </td>
+                                <td>@item.AylikKiraGideri.ToString("C")</td>
+                                <td>
+                                    <span class="badge badge-custom badge-yellow font-monospace">
+                                        @(item.Personeller?.Count ?? 0) Çalışan
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-custom badge-success font-monospace">
+                                        @(item.Araclar?.Count ?? 0) Araç
+                                    </span>
+                                </td>
+                                <td>
+                                    <a class="btn btn-secondary-custom btn-sm py-1 px-2" asp-action="Details" asp-route-id="@item.SubeId">
+                                        Detaylar
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Branch Form -->
+    <div class="col-lg-4">
+        <div class="form-custom">
+            <h3 class="text-white mb-3">Yeni Şube Ekle</h3>
+            <form asp-action="Create" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Şube Adı</label>
+                    <input name="SubeAdi" class="form-control" required placeholder="Örn: İzmir Bornova Şubesi" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Şehir</label>
+                    <input name="Sehir" class="form-control" required placeholder="Örn: İzmir" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Aylık Kira Gideri (TL)</label>
+                    <input name="AylikKiraGideri" type="number" step="0.01" class="form-control" required placeholder="0.00" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Açılış Tarihi</label>
+                    <input name="AcilisTarihi" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100">Şubeyi Kaydet</button>
+            </form>
+        </div>
+    </div>
+</div>

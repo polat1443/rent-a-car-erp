@@ -1,0 +1,7 @@
+KİRALAMA SÖZLEŞMESİ - No: 8
+Tarih: 21.06.2026 19:45
+Müşteri: mehmet yıldız (TC: 25365623211)
+Araç: 48lut65 (peguet 2008)
+Tutar: ₺40.000,00
+PDF Kütüphanesi hatası nedeniyle bu geçici sözleşme belgesi oluşturulmuştur.
+Hata Detayı: No appropriate font found for family name 'Arial'. Implement IFontResolver and assign to 'GlobalFontSettings.FontResolver' to use fonts. See https://docs.pdfsharp.net/link/font-resolving.html

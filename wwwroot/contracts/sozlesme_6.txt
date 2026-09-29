@@ -1,0 +1,7 @@
+KİRALAMA SÖZLEŞMESİ - No: 6
+Tarih: 21.06.2026 19:43
+Müşteri: kenan taş (TC: 56253614455)
+Araç: 25lkj23 (mercedes g200)
+Tutar: ₺10.000,00
+PDF Kütüphanesi hatası nedeniyle bu geçici sözleşme belgesi oluşturulmuştur.
+Hata Detayı: No appropriate font found for family name 'Arial'. Implement IFontResolver and assign to 'GlobalFontSettings.FontResolver' to use fonts. See https://docs.pdfsharp.net/link/font-resolving.html

@@ -1,0 +1,152 @@
+@model IEnumerable<AracKiralamaApp.Models.Kiralama>
+@{
+    ViewData["Title"] = "Kiralamalar";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="m-0 text-white">Kiralama İşlemleri</h1>
+        <p class="text-muted">Aktif ve sonlanmış araç kiralama sözleşmelerini yönetin, operasyonel cezaları takip edin.</p>
+    </div>
+    <a class="btn btn-primary-custom" asp-action="Create">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Yeni Kiralama Başlat
+    </a>
+</div>
+
+<div class="custom-card">
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            Kiralama işlemi bulunmuyor. Yeni bir tane ekleyerek süreci başlatın.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive table-container border-0">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Müşteri</th>
+                        <th>Araç & Şube</th>
+                        <th>Kiralama Periyodu</th>
+                        <th>Kilometre Durumu</th>
+                        <th>Toplam Tutar</th>
+                        <th>Durum</th>
+                        <th>Belgeler</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>#@item.KiralamaId</td>
+                            <td>
+                                <div><strong>@item.Musteri?.AdSoyad</strong></div>
+                                <div class="small text-muted">TC: @item.Musteri?.TcNo</div>
+                            </td>
+                            <td>
+                                <div><strong>@item.Arac?.Marka @item.Arac?.Model</strong></div>
+                                <div class="small text-muted">Plaka: <span class="badge bg-secondary font-monospace">@item.Arac?.Plaka</span></div>
+                                <div class="small mt-1">
+                                    <span class="text-muted">Alış:</span> @item.CikisSube?.SubeAdi
+                                </div>
+                                <div class="small">
+                                    <span class="text-muted">Teslim:</span> @item.DonusSube?.SubeAdi
+                                </div>
+                                @if (item.CikisSubeId != item.DonusSubeId)
+                                {
+                                    <div class="mt-1">
+                                        <span class="badge badge-custom badge-yellow" style="font-size: 0.65rem;" title="Farklı Şubeye Teslim (Drop-off)">
+                                            <i class="fa-solid fa-right-left"></i> Farklı Şube Teslimi
+                                        </span>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <div class="small">Başlangıç: @item.BaslangicTarihi.ToString("dd.MM.yyyy")</div>
+                                <div class="small">Planlanan Bitiş: @item.BitisTarihi.ToString("dd.MM.yyyy")</div>
+                                @if (item.FiiliTeslimTarihi.HasValue)
+                                {
+                                    <div class="small text-warning">Fiili: @item.FiiliTeslimTarihi.Value.ToString("dd.MM.yyyy")</div>
+                                }
+                            </td>
+                            <td>
+                                <div class="small">Alış KM: @item.AlisKm</div>
+                                <div class="small">Limit: @item.LimitKm KM</div>
+                                @if (item.TeslimKm.HasValue)
+                                {
+                                    <div class="small text-success">Teslim KM: @item.TeslimKm.Value</div>
+                                    int yol = item.TeslimKm.Value - item.AlisKm;
+                                    if (yol > item.LimitKm)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger small">KM Aşımı: @(yol - item.LimitKm) KM</span>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <strong class="text-white text-lg">@item.ToplamTutar.ToString("C")</strong>
+                                @if (item.HasarBedeli > 0)
+                                {
+                                    <div class="small text-danger">Hasar: @item.HasarBedeli.ToString("C")</div>
+                                }
+                            </td>
+                            <td>
+                                @if (item.TeslimEdildiMi)
+                                {
+                                    <span class="badge badge-custom badge-success">Teslim Alındı</span>
+                                    @if (item.HasarBedeli > 0)
+                                    {
+                                        <span class="badge badge-custom badge-danger mt-1">Hasarlı</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge badge-custom badge-danger">Aktif Kiralama</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.SozlesmePdfYolu))
+                                {
+                                    <a class="btn btn-outline-info btn-sm px-2 py-1 small" asp-action="DownloadContract" asp-route-id="@item.KiralamaId">
+                                        <i class="bi bi-download"></i> Sözleşme
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Mevcut Değil</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!item.TeslimEdildiMi)
+                                {
+                                    <a class="btn btn-primary-custom btn-sm py-1 px-3" asp-action="TeslimEt" asp-route-id="@item.KiralamaId">
+                                        Teslim Al / Kapat
+                                    </a>
+                                }
+                                else
+                                {
+                                    @if (!string.IsNullOrEmpty(item.HasarFotografiYolu))
+                                    {
+                                        <a href="@item.HasarFotografiYolu" target="_blank" class="btn btn-outline-danger btn-sm px-2 py-1">
+                                            Kanıt Fotoğrafı
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

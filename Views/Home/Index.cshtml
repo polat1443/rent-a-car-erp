@@ -1,0 +1,293 @@
+@model IEnumerable<AracKiralamaApp.Models.Kiralama>
+@{
+    ViewData["Title"] = "Panel";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="m-0 text-white">Hoş Geldiniz</h1>
+        <p class="text-muted">Sistem genelindeki özet durum, aktif operasyonlar ve finansal analiz grafikleri aşağıda listelenmiştir.</p>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="custom-card stat-card" style="border-left: 4px solid var(--accent-yellow);">
+            <div>
+                <span class="text-white-50 font-monospace text-uppercase small">Toplam Araç</span>
+                <div class="stat-value text-white">@ViewBag.TotalArac</div>
+                <div class="mt-2 text-white-50 small">
+                    <span class="text-warning font-weight-bold fw-bold">@ViewBag.BosAracCount Boşta</span> | 
+                    <span class="text-danger font-weight-bold fw-bold">@ViewBag.KiradaAracCount Kirada</span>
+                </div>
+            </div>
+            <div class="stat-icon text-yellow">
+                <i class="fa-solid fa-car fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="custom-card stat-card" style="border-left: 4px solid var(--primary);">
+            <div>
+                <span class="text-white-50 font-monospace text-uppercase small">Toplam Müşteri</span>
+                <div class="stat-value text-white">@ViewBag.TotalMusteri</div>
+                <div class="mt-2 text-white-50 small">Sistemdeki kayıtlı müşteriler</div>
+            </div>
+            <div class="stat-icon text-danger">
+                <i class="fa-solid fa-users fa-2x"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="custom-card stat-card" style="border-left: 4px solid var(--primary);">
+            <div>
+                <span class="text-white-50 font-monospace text-uppercase small">Toplam Gelir</span>
+                <div class="stat-value text-danger font-weight-bold">@ViewBag.ToplamGelir.ToString("C")</div>
+                <div class="mt-2 text-white-50 small">Kira + Hasar Ödemeleri</div>
+            </div>
+            <div class="stat-icon text-danger">
+                <i class="fa-solid fa-wallet fa-2x"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="custom-card stat-card" style="border-left: 4px solid var(--accent-yellow);">
+            <div>
+                <span class="text-white-50 font-monospace text-uppercase small">Toplam Gider</span>
+                <div class="stat-value text-warning font-weight-bold">@ViewBag.ToplamGider.ToString("C")</div>
+                <div class="mt-2 text-white-50 small">Kira + Maaş + Araç OPEX</div>
+            </div>
+            <div class="stat-icon text-yellow">
+                <i class="fa-solid fa-calculator fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart JS Graphics Section -->
+<div class="row g-4 mb-4">
+    <!-- Branch Comparison Bar Chart -->
+    <div class="col-lg-8">
+        <div class="custom-card h-100">
+            <h4 class="text-white mb-3">Şube Gelir ve Gider Karşılaştırması (Finansal Analiz)</h4>
+            <div class="chart-container" style="position: relative; height: 320px; width: 100%;">
+                <canvas id="branchChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fleet Status Doughnut Chart -->
+    <div class="col-lg-4">
+        <div class="custom-card h-100">
+            <h4 class="text-white mb-3">Filo Durum Dağılımı</h4>
+            <div class="chart-container d-flex align-items-center justify-content-center" style="position: relative; height: 320px; width: 100%;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Latest Rentals Table -->
+<div class="custom-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="m-0 text-white">Son Yapılan Kiralama İşlemleri</h4>
+        <a class="btn btn-primary-custom btn-sm" asp-controller="Kiralama" asp-action="Create">Yeni Kiralama Yap</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-4 text-muted">
+            Henüz aktif veya geçmiş kiralama işlemi bulunmuyor.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive table-container border-0">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Müşteri</th>
+                        <th>Araç</th>
+                        <th>Alış Tarihi</th>
+                        <th>Teslim Tarihi</th>
+                        <th>Toplam Tutar</th>
+                        <th>İşlem Durumu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div><strong>@item.Musteri?.AdSoyad</strong></div>
+                                <div class="small text-muted">TC: @item.Musteri?.TcNo</div>
+                            </td>
+                            <td>
+                                <div><strong>@item.Arac?.Marka @item.Arac?.Model</strong></div>
+                                <span class="badge badge-custom badge-success">@item.Arac?.Plaka</span>
+                            </td>
+                            <td>@item.BaslangicTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>@item.BitisTarihi.ToString("dd.MM.yyyy")</td>
+                            <td><strong class="text-white">@item.ToplamTutar.ToString("C")</strong></td>
+                            <td>
+                                @if (item.TeslimEdildiMi)
+                                {
+                                    <span class="badge badge-custom badge-success">Tamamlandı</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-custom badge-danger">Kullanımda</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <!-- Import Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fetch status chart statistics via API
+            fetch('/Home/GetDashboardChartData')
+                .then(response => response.json())
+                .then(data => {
+                    renderStatusChart(data.statusCounts);
+                })
+                .catch(err => console.error("Grafik verileri yüklenirken hata oluştu.", err));
+
+            // Fetch branch comparison statistics via API
+            fetch('/Home/GetBranchChartData')
+                .then(response => response.json())
+                .then(data => {
+                    renderBranchChart(data);
+                })
+                .catch(err => console.error("Şube grafik verileri yüklenirken hata oluştu.", err));
+
+            // 1. Branch Bar Chart rendering
+            function renderBranchChart(branchData) {
+                const ctx = document.getElementById('branchChart').getContext('2d');
+                const labels = branchData.map(b => b.subeAdi);
+                const gelirlers = branchData.map(b => b.gelir);
+                const giderlers = branchData.map(b => b.gider);
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Toplam Gelir (TL)',
+                                data: gelirlers,
+                                backgroundColor: '#ef4444', // Red accent
+                                borderColor: '#dc2626',
+                                borderWidth: 1,
+                                borderRadius: 5
+                            },
+                            {
+                                label: 'Toplam Gider (TL)',
+                                data: giderlers,
+                                backgroundColor: '#eab308', // Yellow accent
+                                borderColor: '#ca8a04',
+                                borderWidth: 1,
+                                borderRadius: 5
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#94a3b8',
+                                    font: {
+                                        family: 'Inter',
+                                        weight: '600'
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.08)'
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    font: {
+                                        family: 'Inter'
+                                    }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.08)'
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    font: {
+                                        family: 'Inter'
+                                    },
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Doughnut Chart rendering (Bos=Yellow, Kirada=Red, Bakimda=Gray)
+            function renderStatusChart(statusCounts) {
+                const ctx = document.getElementById('statusChart').getContext('2d');
+                
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Müsait (Boşta)', 'Kirada', 'Bakımda'],
+                        datasets: [{
+                            data: statusCounts,
+                            backgroundColor: [
+                                '#eab308', // Yellow accent (Boşta)
+                                '#ef4444', // Red accent (Kirada)
+                                '#64748b'  // Slate Gray (Bakımda)
+                            ],
+                            borderColor: '#1e293b', // Match card background
+                            borderWidth: 2,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#94a3b8',
+                                    padding: 20,
+                                    font: {
+                                        family: 'Inter',
+                                        size: 11
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,89 @@
+@model AracKiralamaApp.Models.Musteri
+@{
+    ViewData["Title"] = "Yeni Müşteri Ekle";
+}
+
+<div class="mb-4">
+    <a class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-2" asp-action="Index">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Müşteri Listesine Dön
+    </a>
+    <h1 class="m-0">Yeni Müşteri Ekle</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <div class="form-custom">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="AdSoyad" class="form-label"></label>
+                    <input asp-for="AdSoyad" class="form-control" placeholder="Örn: Ahmet Yılmaz" />
+                    <span asp-validation-for="AdSoyad" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TcNo" class="form-label"></label>
+                    <input asp-for="TcNo" class="form-control" maxlength="11" placeholder="11 haneli T.C. Kimlik No" />
+                    <span asp-validation-for="TcNo" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EhliyetNo" class="form-label"></label>
+                    <input asp-for="EhliyetNo" class="form-control" placeholder="Örn: TR987654" />
+                    <span asp-validation-for="EhliyetNo" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Telefon" class="form-label"></label>
+                    <input asp-for="Telefon" class="form-control" placeholder="Örn: 05321112233" />
+                    <span asp-validation-for="Telefon" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="ahmet.yilmaz@example.com" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="RiskSkoru" class="form-label">Risk Skoru (0 - 100)</label>
+                        <input asp-for="RiskSkoru" type="number" min="0" max="100" class="form-control" value="0" />
+                        <span asp-validation-for="RiskSkoru" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="KiralamaSikligiSegment" class="form-label">Müşteri Segmenti</label>
+                        <select asp-for="KiralamaSikligiSegment" class="form-select">
+                            <option value="Standart">Standart</option>
+                            <option value="Silver">Silver</option>
+                            <option value="Gold">Gold</option>
+                            <option value="Platinum">Platinum</option>
+                        </select>
+                        <span asp-validation-for="KiralamaSikligiSegment" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4 form-check">
+                    <input asp-for="Blacklist" type="checkbox" class="form-check-input border-secondary" id="Blacklist" style="transform: scale(1.2); margin-right: 0.5rem;" />
+                    <label class="form-check-label text-danger fw-bold" asp-for="Blacklist">Müşteriyi Kara Listeye Al</label>
+                    <span asp-validation-for="Blacklist" class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom flex-grow-1">Kaydet</button>
+                    <a class="btn btn-secondary-custom" asp-action="Index">İptal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

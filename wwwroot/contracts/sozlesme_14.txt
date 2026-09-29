@@ -1,0 +1,7 @@
+KİRALAMA SÖZLEŞMESİ - No: 14
+Tarih: 21.06.2026 21:47
+Müşteri: merve çalışkan (TC: 23659874125)
+Araç: 25kul26 (audi rs6)
+Tutar: ₺7.700.000,00
+PDF Kütüphanesi hatası nedeniyle bu geçici sözleşme belgesi oluşturulmuştur.
+Hata Detayı: No appropriate font found for family name 'Arial'. Implement IFontResolver and assign to 'GlobalFontSettings.FontResolver' to use fonts. See https://docs.pdfsharp.net/link/font-resolving.html

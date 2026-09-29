@@ -1,0 +1,124 @@
+@model IEnumerable<AracKiralamaApp.Models.Personel>
+@{
+    ViewData["Title"] = "Personel Yönetimi";
+}
+
+<div class="mb-4">
+    <h1 class="text-white m-0">İnsan Kaynakları & Personel Yönetimi</h1>
+    <p class="text-muted">Şirket çalışanlarını listeleyin, çalıştıkları şubelere göre filtreleyin ve yeni personel girişlerini kaydedin.</p>
+</div>
+
+<!-- Sube Filter Dropdown -->
+<div class="custom-card mb-4 p-3 bg-dark">
+    <form method="get" class="row align-items-center g-3">
+        <div class="col-auto">
+            <label class="col-form-label text-light">Şube Filtresi:</label>
+        </div>
+        <div class="col-sm-4">
+            <select name="subeId" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+                <option value="">-- Tüm Şubeler --</option>
+                @foreach (var sube in ViewBag.SubelerList)
+                {
+                    if (ViewBag.SelectedSubeId != null && (int)ViewBag.SelectedSubeId == sube.SubeId)
+                    {
+                        <option value="@sube.SubeId" selected>@sube.SubeAdi</option>
+                    }
+                    else
+                    {
+                        <option value="@sube.SubeId">@sube.SubeAdi</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            @if (ViewBag.SelectedSubeId != null)
+            {
+                <a asp-action="Index" class="btn btn-secondary-custom btn-sm py-1">Filtreyi Temizle</a>
+            }
+        </div>
+    </form>
+</div>
+
+<div class="row g-4">
+    <!-- List of Staff -->
+    <div class="col-lg-8">
+        <div class="custom-card">
+            <h3 class="text-white mb-3">Çalışan Personel Listesi</h3>
+            
+            @if (!Model.Any())
+            {
+                <div class="text-center py-4 text-muted">
+                    Bu kriterlere uygun çalışan personel kaydı bulunmamaktadır.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Ad Soyad</th>
+                                <th>Rol / Görev</th>
+                                <th>Çalıştığı Şube</th>
+                                <th>Maaş</th>
+                                <th>İşe Giriş Tarihi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><strong>@item.AdSoyad</strong></td>
+                                    <td>
+                                        <span class="badge badge-custom badge-yellow">@item.Rol</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-warning">@item.Sube?.SubeAdi</span>
+                                    </td>
+                                    <td class="font-monospace">@item.Maas.ToString("C")</td>
+                                    <td>@item.IseGirisTarihi.ToString("dd.MM.yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Add Employee Form -->
+    <div class="col-lg-4">
+        <div class="form-custom">
+            <h3 class="text-white mb-3"><i class="fa-solid fa-user-plus text-danger me-2"></i>Yeni Personel Ekle</h3>
+            <form asp-action="Create" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Ad Soyad</label>
+                    <input name="AdSoyad" class="form-control" required placeholder="Örn: Ahmet Demir" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Görev / Rol</label>
+                    <select name="Rol" class="form-select" required>
+                        <option value="Şube Müdürü">Şube Müdürü</option>
+                        <option value="Satış Temsilcisi" selected>Satış Temsilcisi</option>
+                        <option value="Temizlik/Bakım">Temizlik/Bakım</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Çalışacağı Şube</label>
+                    <select name="SubeId" class="form-select" asp-items="ViewBag.SubeId" required>
+                        <option value="">-- Şube Seçin --</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Aylık Maaş (TL)</label>
+                    <input name="Maas" type="number" step="0.01" class="form-control" required placeholder="0.00" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">İşe Giriş Tarihi</label>
+                    <input name="IseGirisTarihi" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                </div>
+                <button type="submit" class="btn btn-accent-hr w-100">Personeli Kaydet</button>
+            </form>
+        </div>
+    </div>
+</div>

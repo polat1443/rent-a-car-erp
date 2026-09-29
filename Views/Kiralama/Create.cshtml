@@ -1,0 +1,182 @@
+@model AracKiralamaApp.Models.Kiralama
+@{
+    ViewData["Title"] = "Yeni Kiralama";
+}
+
+<div class="mb-4">
+    <a class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-2" asp-action="Index">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Kiralama Listesine Dön
+    </a>
+    <h1 class="m-0 text-white">Yeni Kiralama Sözleşmesi</h1>
+    <p class="text-muted">Müşteri, araç, şube ve personel bilgilerini seçerek kiralama sürecini başlatın.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-10 col-lg-8">
+        <div class="form-custom">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label asp-for="MusteriId" class="form-label">Müşteri</label>
+                        <select asp-for="MusteriId" class="form-select" asp-items="ViewBag.MusteriId">
+                            <option value="">-- Müşteri Seçin --</option>
+                        </select>
+                        <span asp-validation-for="MusteriId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="IsleyenPersonelId" class="form-label">İşlemi Kaydeden Personel</label>
+                        <select asp-for="IsleyenPersonelId" id="IsleyenPersonelId" class="form-select" asp-items="ViewBag.IsleyenPersonelId">
+                            <option value="">-- Personel Seçin --</option>
+                        </select>
+                        <span asp-validation-for="IsleyenPersonelId" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label asp-for="CikisSubeId" class="form-label">Alış Şubesi</label>
+                        <select asp-for="CikisSubeId" id="CikisSubeId" class="form-select" asp-items="ViewBag.CikisSubeId">
+                            <option value="">-- Alış Şubesi Seçin --</option>
+                        </select>
+                        <span asp-validation-for="CikisSubeId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DonusSubeId" class="form-label">Teslim Şubesi</label>
+                        <select asp-for="DonusSubeId" class="form-select" asp-items="ViewBag.DonusSubeId">
+                            <option value="">-- Teslim Şubesi Seçin --</option>
+                        </select>
+                        <span asp-validation-for="DonusSubeId" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AracId" class="form-label">Kiralanacak Araç (Sadece Alış Şubesindeki Müsait Araçlar)</label>
+                    <select asp-for="AracId" id="AracId" class="form-select" asp-items="ViewBag.AracId">
+                        <option value="">-- Önce Alış Şubesi Seçin --</option>
+                    </select>
+                    <span asp-validation-for="AracId" class="text-danger small"></span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label asp-for="BaslangicTarihi" class="form-label">Başlangıç Tarihi</label>
+                        <input asp-for="BaslangicTarihi" type="date" class="form-control" id="BaslangicTarihi" />
+                        <span asp-validation-for="BaslangicTarihi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="BitisTarihi" class="form-label">Planlanan Bitiş Tarihi</label>
+                        <input asp-for="BitisTarihi" type="date" class="form-control" id="BitisTarihi" />
+                        <span asp-validation-for="BitisTarihi" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label asp-for="AlisKm" class="form-label">Alış Kilometresi</label>
+                        <input asp-for="AlisKm" class="form-control" placeholder="Örn: 45000" type="number" />
+                        <span asp-validation-for="AlisKm" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="LimitKm" class="form-label">Kilometre Sınırı</label>
+                        <input asp-for="LimitKm" class="form-control" value="300" type="number" />
+                        <span asp-validation-for="LimitKm" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom flex-grow-1">Kiralama Sözleşmesini Onayla & Başlat</button>
+                    <a class="btn btn-secondary-custom" asp-action="Index">İptal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        const alisInput = document.getElementById("BaslangicTarihi");
+        const teslimInput = document.getElementById("BitisTarihi");
+
+        alisInput.addEventListener("change", function() {
+            if (teslimInput.value && (new Date(teslimInput.value) < new Date(alisInput.value))) {
+                const newDate = new Date(alisInput.value);
+                newDate.setDate(newDate.getDate() + 1);
+                teslimInput.value = newDate.toISOString().split('T')[0];
+            }
+        });
+
+        // Dynamic Sube-based Vehicle & Personnel filter
+        const alisSubeSelect = document.getElementById("CikisSubeId");
+        const aracSelect = document.getElementById("AracId");
+        const personelSelect = document.getElementById("IsleyenPersonelId");
+
+        async function updateAvailableVehicles() {
+            const subeId = alisSubeSelect.value;
+            if (!subeId) {
+                aracSelect.innerHTML = '<option value="">-- Önce Alış Şubesi Seçin --</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Kiralama/GetAvailableVehicles?subeId=${subeId}`);
+                const vehicles = await response.json();
+
+                let html = '<option value="">-- Müsait Araç Seçin --</option>';
+                vehicles.forEach(vehicle => {
+                    html += `<option value="${vehicle.id}">${vehicle.display}</option>`;
+                });
+                aracSelect.innerHTML = html;
+            } catch (error) {
+                console.error("Müsait araçlar yüklenirken hata oluştu:", error);
+            }
+        }
+
+        async function updateAvailablePersonel() {
+            const subeId = alisSubeSelect.value;
+            if (!subeId) {
+                personelSelect.innerHTML = '<option value="">-- Personel Seçin --</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Kiralama/GetPersonellerBySube?subeId=${subeId}`);
+                const personeller = await response.json();
+
+                let html = '<option value="">-- Personel Seçin --</option>';
+                personeller.forEach(personel => {
+                    html += `<option value="${personel.id}">${personel.display}</option>`;
+                });
+                personelSelect.innerHTML = html;
+            } catch (error) {
+                console.error("Personeller yüklenirken hata oluştu:", error);
+            }
+        }
+
+        alisSubeSelect.addEventListener("change", function() {
+            updateAvailableVehicles();
+            updateAvailablePersonel();
+        });
+        
+        // Trigger once if value preselected
+        if (alisSubeSelect.value) {
+            if (!aracSelect.value || aracSelect.value === "") {
+                updateAvailableVehicles();
+            }
+            if (!personelSelect.value || personelSelect.value === "") {
+                updateAvailablePersonel();
+            }
+        }
+    </script>
+}

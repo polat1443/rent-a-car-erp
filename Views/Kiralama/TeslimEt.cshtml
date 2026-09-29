@@ -1,0 +1,75 @@
+@model AracKiralamaApp.Models.Kiralama
+@{
+    ViewData["Title"] = "Araç Teslim Al";
+}
+
+<div class="mb-4">
+    <a class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-2" asp-action="Index">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Kiralama Listesine Dön
+    </a>
+    <h1 class="m-0 text-white">Araç Teslim Al & Sözleşme Kapat</h1>
+    <p class="text-muted">Aracın teslim kilometre, fiili teslim tarihi ve hasar durumu bilgilerini girerek sözleşmeyi sonlandırın. Gecikme ve kilometre aşım ücretleri otomatik hesaplanacaktır.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-5 mb-4">
+        <div class="custom-card h-100">
+            <h4 class="text-white mb-3">Sözleşme Bilgileri</h4>
+            <div class="mb-2"><strong>Müşteri:</strong> <span class="text-muted">@Model.Musteri?.AdSoyad (TC: @Model.Musteri?.TcNo)</span></div>
+            <div class="mb-2"><strong>Araç:</strong> <span class="text-muted">@Model.Arac?.Marka @Model.Arac?.Model (@Model.Arac?.Plaka)</span></div>
+            <div class="mb-2"><strong>Başlangıç Tarihi:</strong> <span class="text-muted">@Model.BaslangicTarihi.ToString("dd.MM.yyyy")</span></div>
+            <div class="mb-2"><strong>Planlanan Bitiş:</strong> <span class="text-muted">@Model.BitisTarihi.ToString("dd.MM.yyyy")</span></div>
+            <div class="mb-2"><strong>Alış Kilometresi:</strong> <span class="text-muted">@Model.AlisKm KM</span></div>
+            <div class="mb-2"><strong>Kilometre Limiti:</strong> <span class="text-muted">@Model.LimitKm KM</span></div>
+            <div class="mb-2"><strong>Sözleşme Başlangıç Tutarı:</strong> <span class="text-white font-monospace">@Model.ToplamTutar.ToString("C")</span></div>
+            
+            <hr class="border-secondary my-3" />
+            
+            <h5 class="text-white">Ceza Koşulları:</h5>
+            <div class="small text-muted">- KM Aşım Ücreti: @Model.KmAsimUcretiPerKm.ToString("C") / KM</div>
+            <div class="small text-muted">- Günlük Gecikme Bedeli: @Model.GecikmeUcretiPerGun.ToString("C") / Gün</div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-7">
+        <div class="form-custom">
+            <form asp-action="TeslimEt" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="KiralamaId" />
+
+                <div class="mb-3">
+                    <label class="form-label" for="teslimKm">Teslim Kilometresi</label>
+                    <input name="teslimKm" id="teslimKm" type="number" class="form-control" value="@Model.TeslimKm" required />
+                    <div class="form-text text-muted">Araç alış kilometresinden (@Model.AlisKm KM) düşük olamaz.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="fiiliTeslimTarihi">Fiili Teslim Tarihi</label>
+                    <input name="fiiliTeslimTarihi" id="fiiliTeslimTarihi" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="hasarBedeli">Hasar Bedeli (Opsiyonel)</label>
+                    <div class="input-group">
+                        <input name="hasarBedeli" id="hasarBedeli" type="number" step="0.01" class="form-control" value="0.00" />
+                        <span class="input-group-text bg-dark border-secondary text-muted">TL</span>
+                    </div>
+                    <div class="form-text text-muted">Hasar bedeli girilirse, sistem otomatik olarak araç durumunu <strong>Bakımda</strong> yapacak ve müşteri risk puanını güncelleyecektir.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="hasarFotografi">Hasar Fotoğrafı Kanıtı</label>
+                    <input name="hasarFotografi" id="hasarFotografi" type="file" class="form-control" accept="image/*" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom flex-grow-1">Teslim Alma İşlemini Tamamla</button>
+                    <a class="btn btn-secondary-custom" asp-action="Index">Vazgeç</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

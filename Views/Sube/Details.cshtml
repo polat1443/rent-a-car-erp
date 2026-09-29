@@ -1,0 +1,106 @@
+@model AracKiralamaApp.Models.Sube
+@{
+    ViewData["Title"] = $"{Model.SubeAdi} Detay";
+}
+
+<div class="mb-4">
+    <a class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-2" asp-action="Index">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Şube Listesine Dön
+    </a>
+    <h1 class="text-white m-0">@Model.SubeAdi Detay & Finansal Rapor</h1>
+    <p class="text-muted">@Model.Sehir</p>
+</div>
+
+<div class="row g-4">
+    <!-- Branch OPEX Costs Card -->
+    <div class="col-md-5">
+        <div class="custom-card bg-dark text-white border border-secondary mb-4">
+            <h3 class="text-white mb-4">Aylık Maliyet Analizi</h3>
+            <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
+                <span>Aylık Kira Bedeli:</span>
+                <span class="font-monospace text-warning fw-bold">@Model.AylikKiraGideri.ToString("C")</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
+                <span>Toplam Personel Maaş Gideri:</span>
+                <span class="font-monospace text-warning fw-bold">@(((decimal)ViewBag.ToplamPersonelMaas).ToString("C"))</span>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <h4 class="text-white">Şubenin Toplam Aylık Gideri:</h4>
+                <h4 class="text-info font-monospace fw-bold">@(((decimal)ViewBag.ToplamAylikGider).ToString("C"))</h4>
+            </div>
+            <div class="alert alert-info mt-4 bg-opacity-10 border border-info-subtle text-white small mb-0">
+                Bu şubede toplam <strong>@(Model.Personeller?.Count ?? 0)</strong> personel çalışmakta ve <strong>@(Model.Araclar?.Count ?? 0)</strong> araç bulunmaktadır.
+            </div>
+        </div>
+    </div>
+
+    <!-- Branch Personnel and Vehicles tabs -->
+    <div class="col-md-7">
+        <div class="custom-card">
+            <h3 class="text-white mb-3">Şube Kaynakları</h3>
+            
+            <ul class="nav nav-tabs border-secondary mb-3" id="subeDetailsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active text-light bg-dark border-secondary" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button" role="tab">Personeller (@(Model.Personeller?.Count ?? 0))</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-light bg-dark border-secondary" id="fleet-tab" data-bs-toggle="tab" data-bs-target="#fleet" type="button" role="tab">Kayıtlı Araçlar (@(Model.Araclar?.Count ?? 0))</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="subeDetailsTabsContent">
+                <!-- Personnel list -->
+                <div class="tab-pane fade show active" id="staff" role="tabpanel">
+                    @if (Model.Personeller == null || !Model.Personeller.Any())
+                    {
+                        <p class="text-muted small">Bu şubeye kayıtlı çalışan personel bulunmuyor.</p>
+                    }
+                    else
+                    {
+                        <ul class="list-group bg-dark border-0">
+                            @foreach (var p in Model.Personeller)
+                            {
+                                <li class="list-group-item bg-dark border-secondary text-white d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>@p.AdSoyad</strong>
+                                        <div class="small text-muted">@p.Rol</div>
+                                    </div>
+                                    <span class="font-monospace text-info">@p.Maas.ToString("C")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+
+                <!-- Vehicles list -->
+                <div class="tab-pane fade" id="fleet" role="tabpanel">
+                    @if (Model.Araclar == null || !Model.Araclar.Any())
+                    {
+                        <p class="text-muted small">Bu şubede anlık olarak bulunan araç yok.</p>
+                    }
+                    else
+                    {
+                        <ul class="list-group bg-dark border-0">
+                            @foreach (var a in Model.Araclar)
+                            {
+                                <li class="list-group-item bg-dark border-secondary text-white d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>@a.Marka @a.Model (@a.Yil)</strong>
+                                        <div class="small text-muted">Plaka: @a.Plaka</div>
+                                    </div>
+                                    <div>
+                                        <span class="badge @(a.Durum == "Bos" ? "bg-success" : a.Durum == "Kirada" ? "bg-danger" : "bg-warning")">@a.Durum</span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

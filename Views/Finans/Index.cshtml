@@ -1,0 +1,218 @@
+@model IEnumerable<AracKiralamaApp.Controllers.SubeFinansalDurumViewModel>
+@{
+    ViewData["Title"] = "Finans ve Muhasebe Yönetimi";
+}
+
+<div class="mb-4">
+    <h1 class="text-white m-0">Finans ve Muhasebe Yönetimi</h1>
+    <p class="text-muted">Şubelerinizin kiralama gelirlerini, personel ve kira giderlerini analiz edin ve net karlılık oranlarını takip edin.</p>
+</div>
+
+<!-- Financial Summary Cards -->
+<div class="row g-4 mb-4">
+    @{
+        decimal genelGelir = Model.Sum(m => m.ToplamGelir);
+        decimal genelGider = Model.Sum(m => m.ToplamGider);
+        decimal genelNetKar = genelGelir - genelGider;
+    }
+    <div class="col-md-4">
+        <div class="custom-card stat-card" style="border-left: 4px solid var(--success);">
+            <div>
+                <span class="text-white-50 font-monospace text-uppercase small">Genel Toplam Gelir</span>
+                <div class="stat-value text-success">@genelGelir.ToString("C")</div>
+                <div class="mt-2 text-white-50 small">Tüm şubelerdeki toplam tahsilat</div>
+            </div>
+            <div class="stat-icon text-success">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.15; color: var(--success);">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="custom-card stat-card" style="border-left: 4px solid var(--danger);">
+            <div>
+                <span class="text-white-50 font-monospace text-uppercase small">Genel Toplam Gider</span>
+                <div class="stat-value text-danger">@genelGider.ToString("C")</div>
+                <div class="mt-2 text-white-50 small">Kira ve maaş giderleri toplamı</div>
+            </div>
+            <div class="stat-icon text-danger">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.15; color: var(--danger);">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="custom-card stat-card" style="border-left: 4px solid @(genelNetKar >= 0 ? "var(--success)" : "var(--danger)");">
+            <div>
+                <span class="text-white-50 font-monospace text-uppercase small">Konsolide Net Kâr / Zarar</span>
+                <div class="stat-value @(genelNetKar >= 0 ? "text-success" : "text-danger")">@genelNetKar.ToString("C")</div>
+                <div class="mt-2 text-white-50 small">Şirketin genel net kârlılık durumu</div>
+            </div>
+            <div class="stat-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.15;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="custom-card">
+            <h4 class="text-white mb-3">Şube Bazlı Finansal Karşılaştırma Grafiği (Gelir / Gider)</h4>
+            <div class="chart-container" style="position: relative; height: 360px; width: 100%;">
+                <canvas id="branchFinanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Branch Financial Grid Table -->
+<div class="custom-card">
+    <h4 class="text-white mb-3">Şube Net Kar / Zarar Durumu</h4>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Şube Adı</th>
+                    <th>Toplam Gelir (Ciro)</th>
+                    <th>Toplam Gider (Sabit)</th>
+                    <th>Net Kar / Zarar</th>
+                    <th>Karlılık Durumu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.SubeAdi</strong></td>
+                        <td class="text-success font-monospace">@item.ToplamGelir.ToString("C")</td>
+                        <td class="text-danger font-monospace">@item.ToplamGider.ToString("C")</td>
+                        <td class="font-monospace @(item.NetKarZarar >= 0 ? "text-success" : "text-danger") fw-bold">
+                            @item.NetKarZarar.ToString("C")
+                        </td>
+                        <td>
+                            @if (item.KardaMi)
+                            {
+                                <span class="badge bg-success-subtle text-success py-1 px-3" style="font-size: 0.85rem;">Karda</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger-subtle text-danger py-1 px-3" style="font-size: 0.85rem;">Zararda</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Retrieve dynamic data serialized from Razor model
+            const branchNames = @Html.Raw(Json.Serialize(Model.Select(m => m.SubeAdi)));
+            const revenues = @Html.Raw(Json.Serialize(Model.Select(m => m.ToplamGelir)));
+            const expenses = @Html.Raw(Json.Serialize(Model.Select(m => m.ToplamGider)));
+
+            const ctx = document.getElementById('branchFinanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: branchNames,
+                    datasets: [
+                        {
+                            label: 'Gelir (TL)',
+                            data: revenues,
+                            backgroundColor: '#10b981', // Emerald success green
+                            borderColor: '#059669',
+                            borderWidth: 1.5,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Gider (TL)',
+                            data: expenses,
+                            backgroundColor: '#ef4444', // Alert danger red
+                            borderColor: '#dc2626',
+                            borderWidth: 1.5,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#94a3b8',
+                                font: {
+                                    family: 'Inter',
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.06)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    family: 'Inter',
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.06)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    family: 'Inter',
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

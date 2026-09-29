@@ -1,0 +1,513 @@
+@model AracKiralamaApp.Controllers.BiViewModel
+@{
+    ViewData["Title"] = "İş Zekası (BI) & Analiz Paneli";
+}
+
+<div class="mb-4">
+    <h1 class="text-white m-0">İş Zekası & Analiz Paneli</h1>
+    <p class="text-muted">Makine Öğrenmesi (K-Means, KNN), Araç ROI analizi, Yatırım Simülatörü ve Şifreli Audit Günlüklerini buradan takip edebilirsiniz.</p>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs border-secondary mb-4" id="biTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active text-light bg-dark border-secondary" id="roi-tab" data-bs-toggle="tab" data-bs-target="#roi" type="button" role="tab" aria-controls="roi" aria-selected="true">Araç Finans & ROI</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link text-light bg-dark border-secondary" id="ml-tab" data-bs-toggle="tab" data-bs-target="#ml" type="button" role="tab" aria-controls="ml" aria-selected="false">Yapay Zeka & Risk Analizi</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link text-light bg-dark border-secondary" id="sim-tab" data-bs-toggle="tab" data-bs-target="#sim" type="button" role="tab" aria-controls="sim" aria-selected="false">Yatırım Simülatörü</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link text-light bg-dark border-secondary" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit" type="button" role="tab" aria-controls="audit" aria-selected="false">Sistem Logları (Audit Trail)</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="biTabsContent">
+    
+    <!-- TAB 1: VEHICLE ROI -->
+    <div class="tab-pane fade show active" id="roi" role="tabpanel" aria-labelledby="roi-tab">
+        <div class="custom-card mb-4">
+            <h3 class="text-white mb-3">Filo ROI (Amortisman) Analizi</h3>
+            <p class="text-muted small">Yatırım Geri Dönüş Oranı (ROI), araçların kiralama gelirlerinin toplam maliyete (Satın alma + Kasko + Sigorta + Bakım) bölünmesiyle hesaplanır.</p>
+            
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Araç</th>
+                            <th>Satın Alma Bedeli</th>
+                            <th>Toplam Bakım Maliyeti</th>
+                            <th>Toplam Kiralama Geliri</th>
+                            <th>ROI Oranı (%)</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var arac in Model.Araclar)
+                        {
+                            decimal toplamBakimMaliyeti = arac.BakimLoglari?.Sum(bl => bl.Maliyet) ?? 0;
+                            decimal toplamGelir = arac.Kiralamalar?.Sum(k => k.ToplamTutar) ?? 0;
+                            decimal roi = arac.RoiYuzdesi;
+                            
+                            <tr>
+                                <td>
+                                    <strong>@arac.Marka @arac.Model</strong>
+                                    <div class="small text-muted">@arac.Plaka</div>
+                                </td>
+                                <td>@arac.SatinAlmaBedeli.ToString("C")</td>
+                                <td>@toplamBakimMaliyeti.ToString("C")</td>
+                                <td class="text-success font-monospace">@toplamGelir.ToString("C")</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-grow-1 bg-dark border border-secondary" style="height: 10px; min-width: 100px;">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: @Math.Min(100, roi)%" aria-valuenow="@roi" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <span class="text-info font-monospace fw-bold">@roi%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (arac.Durum == "Bos")
+                                    {
+                                        <span class="badge bg-success-subtle text-success">Müsait</span>
+                                    }
+                                    else if (arac.Durum == "Kirada")
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary">Kirada</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger">Bakımda</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: ML & CUSTOMER RISK -->
+    <div class="tab-pane fade" id="ml" role="tabpanel" aria-labelledby="ml-tab">
+        <div class="row">
+            <!-- Customer Risk Profiling & K-Means -->
+            <div class="col-lg-8 mb-4">
+                <div class="custom-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="text-white m-0">Müşteri Risk Skoru ve Segmentasyon</h3>
+                        <form asp-action="TriggerKMeans" method="post">
+                            <button type="submit" class="btn btn-primary-custom btn-sm">
+                                <i class="bi bi-cpu"></i> K-Means Yeniden Hesapla
+                            </button>
+                        </form>
+                    </div>
+                    <p class="text-muted small">K-Means algoritmamız, müşterilerin kiralama sıklığı ve toplam harcamalarına göre VIP, Standart ve Pasif olarak segmentler.</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Müşteri</th>
+                                    <th>Segment</th>
+                                    <th>Kiralama Sayısı</th>
+                                    <th>Risk Skoru (0-100)</th>
+                                    <th>Kara Liste</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var m in Model.Musteriler)
+                                {
+                                    int rentalsCount = m.Kiralamalar?.Count ?? 0;
+                                    <tr>
+                                        <td>
+                                            <strong>@m.AdSoyad</strong>
+                                            <div class="small text-muted">TC: @m.TcNo</div>
+                                        </td>
+                                        <td>
+                                            @if (m.KiralamaSikligiSegment == "VIP")
+                                            {
+                                                <span class="badge bg-info text-dark">@m.KiralamaSikligiSegment</span>
+                                            }
+                                            else if (m.KiralamaSikligiSegment == "Standart")
+                                            {
+                                                <span class="badge bg-secondary">@m.KiralamaSikligiSegment</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">@m.KiralamaSikligiSegment</span>
+                                            }
+                                        </td>
+                                        <td>@rentalsCount</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="progress flex-grow-1 bg-dark border border-secondary" style="height: 10px; min-width: 80px;">
+                                                    <div class="progress-bar @(m.RiskSkoru >= 70 ? "bg-danger" : m.RiskSkoru >= 30 ? "bg-warning" : "bg-success")" role="progressbar" style="width: @m.RiskSkoru%" aria-valuenow="@m.RiskSkoru" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <span class="font-monospace">@m.RiskSkoru</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (m.Blacklist)
+                                            {
+                                                <span class="badge bg-danger">Kara Listede</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Güvenli</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <form asp-action="ToggleBlacklist" asp-route-id="@m.MusteriId" method="post">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning py-1">
+                                                    @(m.Blacklist ? "Listeden Çıkar" : "Kara Listeye Al")
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KNN Price Optimizer Tool -->
+            <div class="col-lg-4 mb-4">
+                <div class="custom-card h-100">
+                    <h3 class="text-white mb-3">KNN Fiyat Optimizasyonu</h3>
+                    <p class="text-muted small">KNN (K-Nearest Neighbors, K=3) algoritmasıyla, seçilen aracın özelliklerine (yıl, mevsimsel dönem ve süre) göre tarihsel verileri analiz edip en optimize günlük kiralama bedelini hesaplar.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-light">Hesaplanacak Araç</label>
+                        <select id="knnAracId" class="form-select bg-dark text-white border-secondary">
+                            @foreach (var item in ViewBag.AracList)
+                            {
+                                <option value="@item.Id">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-light">Mevsim (Ay)</label>
+                            <select id="knnMonth" class="form-select bg-dark text-white border-secondary">
+                                <option value="1">Ocak (Kış)</option>
+                                <option value="4">Nisan (İlkbahar)</option>
+                                <option value="7" selected>Temmuz (Yaz - Yoğun)</option>
+                                <option value="10">Ekim (Sonbahar)</option>
+                            </select>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label text-light">Model Yılı</label>
+                            <input id="knnYear" type="number" class="form-control bg-dark text-white border-secondary" value="2023" />
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-light">Kiralama Süresi (Gün)</label>
+                        <input id="knnDuration" type="number" class="form-control bg-dark text-white border-secondary" value="5" />
+                    </div>
+
+                    <button type="button" id="btnRunKnn" class="btn btn-info-custom w-100 mb-3">
+                        Dinamik Fiyat Önerisi Al
+                    </button>
+
+                    <!-- KNN Output Box -->
+                    <div id="knnResultBox" class="p-3 bg-dark border border-secondary rounded text-center d-none">
+                        <div class="small text-muted mb-1">Algoritmanın Hesapladığı Fiyat</div>
+                        <h2 id="knnRecPrice" class="text-info font-monospace my-2">0.00 TL</h2>
+                        <div id="knnMessage" class="small text-success"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: INVESTMENT SIMULATOR -->
+    <div class="tab-pane fade" id="sim" role="tabpanel" aria-labelledby="sim-tab">
+        <div class="row">
+            <div class="col-md-5 mb-4">
+                <div class="custom-card">
+                    <h3 class="text-white mb-3">Şube Yatırım Analiz Parametreleri</h3>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-light d-flex justify-content-between">
+                            Şube Kurulum Maliyeti (CapEx): 
+                            <span id="capexVal" class="text-info font-monospace fw-bold">1,500,000 TL</span>
+                        </label>
+                        <input type="range" class="form-range" id="capexRange" min="200000" max="5000000" step="50000" value="1500000" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-light d-flex justify-content-between">
+                            Aylık Sabit Şube Giderleri (OpEx): 
+                            <span id="opexVal" class="text-info font-monospace fw-bold">120,000 TL</span>
+                        </label>
+                        <input type="range" class="form-range" id="opexRange" min="20000" max="500000" step="5000" value="120000" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-light d-flex justify-content-between">
+                            Hedeflenen Filo Araç Sayısı: 
+                            <span id="carsVal" class="text-info font-monospace fw-bold">15 Araç</span>
+                        </label>
+                        <input type="range" class="form-range" id="carsRange" min="2" max="60" step="1" value="15" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-light d-flex justify-content-between">
+                            Araç Başı Ortalama Aylık Gelir: 
+                            <span id="incomeVal" class="text-info font-monospace fw-bold">25,000 TL</span>
+                        </label>
+                        <input type="range" class="form-range" id="incomeRange" min="5000" max="100000" step="1000" value="25000" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7 mb-4">
+                <div class="custom-card bg-dark text-white border border-secondary h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h3 class="text-white mb-4">ROI ve Amortisman Tahmini (Forecasting)</h3>
+                        
+                        <div class="row text-center mb-4">
+                            <div class="col-6 col-sm-4 mb-3">
+                                <div class="text-muted small">Toplam Aylık Ciro</div>
+                                <h3 id="calcTotalRevenue" class="text-info font-monospace my-1">375,000 TL</h3>
+                            </div>
+                            <div class="col-6 col-sm-4 mb-3">
+                                <div class="text-muted small">Aylık Sabit Giderler</div>
+                                <h3 id="calcTotalExpenses" class="text-danger font-monospace my-1">120,000 TL</h3>
+                            </div>
+                            <div class="col-12 col-sm-4 mb-3">
+                                <div class="text-muted small">Net Aylık Şube Kârı</div>
+                                <h3 id="calcNetProfit" class="text-success font-monospace my-1">255,000 TL</h3>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-dark border border-secondary rounded text-center mb-4">
+                            <div class="text-muted small">Yatırım Geri Dönüş Süresi (Başa Baş Noktası)</div>
+                            <h1 id="calcBreakEven" class="text-warning font-monospace my-2">5.9 Ay</h1>
+                            <div id="breakEvenFeedback" class="small text-info">Hızlı Amortisman: Bu yatırım fizibildir.</div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info bg-opacity-10 border border-info-subtle mb-0 text-white">
+                        <strong>Uzman Analist Görüşü:</strong> 
+                        <span id="simulatorOpinion">Belirlenen gelir ve gider rasyolarına göre yeni şube yatırımı yüksek karlılık potansiyeline sahiptir. Amortisman süresi standartların altındadır.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: AUDIT TRAIL LOGS -->
+    <div class="tab-pane fade" id="audit" role="tabpanel" aria-labelledby="audit-tab">
+        <div class="custom-card">
+            <h3 class="text-white mb-3">Güvenlik ve Audit Trail Günlükleri</h3>
+            <p class="text-muted small">Tüm veri yazma/silme/güncelleme işlemleri şifrelenerek kayıt altına alınır. İlgili satırdaki <strong>Deşifre Et</strong> düğmesine tıklayarak özgün değerleri deşifre edebilirsiniz.</p>
+            
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Zaman Damgası</th>
+                            <th>Kullanıcı</th>
+                            <th>İşlem</th>
+                            <th>Tablo</th>
+                            <th>Eski Değer (Şifreli)</th>
+                            <th>Yeni Değer (Şifreli)</th>
+                            <th>IP Adresi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model.SystemLogs)
+                        {
+                            <tr id="log-row-@log.Id">
+                                <td class="small">@log.LogTarihi.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                                <td><span class="badge bg-secondary">@log.Kullanici</span></td>
+                                <td>
+                                    <span class="badge @(log.IslemTuru == "Added" ? "bg-success" : log.IslemTuru == "Deleted" ? "bg-danger" : "bg-warning")">
+                                        @log.IslemTuru
+                                    </span>
+                                </td>
+                                <td><strong>@log.TabloAdi</strong></td>
+                                <td class="font-monospace text-muted text-truncate" style="max-width: 120px;" title="@log.EskiVeri">@log.EskiVeri</td>
+                                <td class="font-monospace text-muted text-truncate" style="max-width: 120px;" title="@log.YeniVeri">@log.YeniVeri</td>
+                                <td class="small">@log.IpAdresi</td>
+                                <td>
+                                    <button class="btn btn-outline-info btn-sm btn-decrypt" data-log-id="@log.Id">Deşifre Et</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for decrypted data display -->
+<div class="modal fade" id="decryptionModal" tabindex="-1" aria-labelledby="decryptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="decryptionModalLabel">Veritabanı Günlüğü Deşifre Sonucu</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-warning fw-bold">Eski Değerler (Plain Text)</label>
+                        <pre id="modalOldData" class="bg-black p-3 border border-secondary rounded font-monospace text-info overflow-auto" style="max-height: 300px;">Veri yok</pre>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-success fw-bold">Yeni Değerler (Plain Text)</label>
+                        <pre id="modalNewData" class="bg-black p-3 border border-secondary rounded font-monospace text-info overflow-auto" style="max-height: 300px;">Veri yok</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            // -------------------------------------------------------------
+            // KNN PRICING OPTIMIZER
+            // -------------------------------------------------------------
+            const btnRunKnn = document.getElementById("btnRunKnn");
+            btnRunKnn.addEventListener("click", function() {
+                const aracId = document.getElementById("knnAracId").value;
+                const month = document.getElementById("knnMonth").value;
+                const year = document.getElementById("knnYear").value;
+                const duration = document.getElementById("knnDuration").value;
+
+                fetch(`/Bi/OptimizePriceKNN?aracId=${aracId}&year=${year}&month=${month}&duration=${duration}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const resultBox = document.getElementById("knnResultBox");
+                            resultBox.classList.remove("d-none");
+                            document.getElementById("knnRecPrice").innerText = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(data.recommendedPrice);
+                            document.getElementById("knnMessage").innerText = data.message;
+                        }
+                    })
+                    .catch(err => alert("KNN fiyat hesabı alınamadı."));
+            });
+
+            // -------------------------------------------------------------
+            // DECRYPTION AUDIT TRAIL LOGS
+            // -------------------------------------------------------------
+            const decryptButtons = document.querySelectorAll(".btn-decrypt");
+            const decryptModal = new bootstrap.Modal(document.getElementById('decryptionModal'));
+
+            decryptButtons.forEach(button => {
+                button.addEventListener("click", function() {
+                    const logId = this.getAttribute("data-log-id");
+                    
+                    fetch(`/Bi/DecryptLog/${logId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                document.getElementById("modalOldData").innerText = JSON.stringify(JSON.parse(data.eskiVeri), null, 2);
+                                document.getElementById("modalNewData").innerText = JSON.stringify(JSON.parse(data.yeniVeri), null, 2);
+                                decryptModal.show();
+                            } else {
+                                alert("Deşifre başarısız oldu: " + data.message);
+                            }
+                        })
+                        .catch(err => alert("Log çözülemedi."));
+                });
+            });
+
+            // -------------------------------------------------------------
+            // REALTIME INVESTMENT SIMULATOR
+            // -------------------------------------------------------------
+            const capexRange = document.getElementById("capexRange");
+            const opexRange = document.getElementById("opexRange");
+            const carsRange = document.getElementById("carsRange");
+            const incomeRange = document.getElementById("incomeRange");
+
+            const capexVal = document.getElementById("capexVal");
+            const opexVal = document.getElementById("opexVal");
+            const carsVal = document.getElementById("carsVal");
+            const incomeVal = document.getElementById("incomeVal");
+
+            function formatCurrency(val) {
+                return new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(val) + " TL";
+            }
+
+            function updateSimulator() {
+                const capex = parseFloat(capexRange.value);
+                const opex = parseFloat(opexRange.value);
+                const cars = parseInt(carsRange.value);
+                const income = parseFloat(incomeRange.value);
+
+                // Update text display
+                capexVal.innerText = formatCurrency(capex);
+                opexVal.innerText = formatCurrency(opex);
+                carsVal.innerText = cars + " Araç";
+                incomeVal.innerText = formatCurrency(income);
+
+                // Math calculation
+                const totalRevenue = cars * income;
+                const netProfit = totalRevenue - opex;
+
+                document.getElementById("calcTotalRevenue").innerText = formatCurrency(totalRevenue);
+                document.getElementById("calcTotalExpenses").innerText = formatCurrency(opex);
+
+                const calcNetProfit = document.getElementById("calcNetProfit");
+                const calcBreakEven = document.getElementById("calcBreakEven");
+                const feedbackText = document.getElementById("breakEvenFeedback");
+                const opinionText = document.getElementById("simulatorOpinion");
+
+                if (netProfit <= 0) {
+                    calcNetProfit.innerText = formatCurrency(netProfit);
+                    calcNetProfit.className = "text-danger font-monospace my-1";
+                    calcBreakEven.innerText = "∞ Ay";
+                    feedbackText.innerText = "Zarar Ediyor: Şube sabit giderleri karşılanamıyor.";
+                    feedbackText.className = "small text-danger";
+                    opinionText.innerText = "Yatırım yapılamaz. Sabit operasyonel maliyetler gelir rasyolarından yüksek. Araç sayısı artırılmalı veya kiralama birim bedeli optimize edilmelidir.";
+                } else {
+                    calcNetProfit.innerText = formatCurrency(netProfit);
+                    calcNetProfit.className = "text-success font-monospace my-1";
+                    
+                    const breakEvenMonths = capex / netProfit;
+                    calcBreakEven.innerText = breakEvenMonths.toFixed(1) + " Ay";
+
+                    if (breakEvenMonths <= 12) {
+                        feedbackText.innerText = "Mükemmel Yatırım: Çok hızlı amortisman süresi.";
+                        feedbackText.className = "small text-success";
+                        opinionText.innerText = "Yatırım rasyoları harikulade. 1 yılın altında yatırımın başa baş noktasına ulaşması kurumsal ölçekte son derece kârlıdır.";
+                    } else if (breakEvenMonths <= 24) {
+                        feedbackText.innerText = "Fizibil Yatırım: Sektör standardı amortisman süresi.";
+                        feedbackText.className = "small text-info";
+                        opinionText.innerText = "Yatırım standart oto kiralama şubesi ortalamalarındadır. Güvenli ve sürdürülebilir bir büyüme planına uygundur.";
+                    } else {
+                        feedbackText.innerText = "Yavaş Amortisman: Uzun vadeli sermaye gereksinimi.";
+                        feedbackText.className = "small text-warning";
+                        opinionText.innerText = "Yatırım amortisman süresi 2 yıldan uzundur. Sermaye geri dönüş oranı düşüktür. CapEx veya sabit giderlerin revize edilmesi önerilir.";
+                    }
+                }
+            }
+
+            // Bind slider change events
+            capexRange.addEventListener("input", updateSimulator);
+            opexRange.addEventListener("input", updateSimulator);
+            carsRange.addEventListener("input", updateSimulator);
+            incomeRange.addEventListener("input", updateSimulator);
+
+            // Initial calculation
+            updateSimulator();
+        });
+    </script>
+}

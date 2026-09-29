@@ -1,0 +1,7 @@
+KİRALAMA SÖZLEŞMESİ - No: 7
+Tarih: 21.06.2026 19:44
+Müşteri: mehmet yıldız (TC: 25365623211)
+Araç: 12cvb236 (ford fiesta)
+Tutar: ₺1.250,00
+PDF Kütüphanesi hatası nedeniyle bu geçici sözleşme belgesi oluşturulmuştur.
+Hata Detayı: No appropriate font found for family name 'Arial'. Implement IFontResolver and assign to 'GlobalFontSettings.FontResolver' to use fonts. See https://docs.pdfsharp.net/link/font-resolving.html

@@ -1,0 +1,96 @@
+@model AracKiralamaApp.Models.Arac
+@{
+    ViewData["Title"] = "Yeni Araç Ekle";
+}
+
+<div class="mb-4">
+    <a class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-2" asp-action="Index">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Araç Listesine Dön
+    </a>
+    <h1 class="m-0 text-white">Yeni Araç Ekle</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-10 col-lg-8">
+        <div class="form-custom">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Plaka" class="form-label"></label>
+                        <input asp-for="Plaka" class="form-control" placeholder="Örn: 34ABC123" />
+                        <span asp-validation-for="Plaka" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="BulunduguSubeId" class="form-label">Bulunduğu Şube</label>
+                        <select asp-for="BulunduguSubeId" class="form-select" asp-items="ViewBag.BulunduguSubeId">
+                            <option value="">-- Şube Seçin --</option>
+                        </select>
+                        <span asp-validation-for="BulunduguSubeId" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Marka" class="form-label"></label>
+                        <input asp-for="Marka" class="form-control" placeholder="Örn: Renault" />
+                        <span asp-validation-for="Marka" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Model" class="form-label"></label>
+                        <input asp-for="Model" class="form-control" placeholder="Örn: Clio" />
+                        <span asp-validation-for="Model" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Yil" class="form-label"></label>
+                        <input asp-for="Yil" type="number" class="form-control" value="2026" />
+                        <span asp-validation-for="Yil" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="GunlukFiyat" class="form-label"></label>
+                        <input asp-for="GunlukFiyat" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                        <span asp-validation-for="GunlukFiyat" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Durum" class="form-label"></label>
+                        <select asp-for="Durum" class="form-select">
+                            <option value="Bos">Boş / Müsait</option>
+                            <option value="Kirada">Kirada</option>
+                            <option value="Bakimda">Bakımda</option>
+                        </select>
+                        <span asp-validation-for="Durum" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="SatinAlmaBedeli" class="form-label">Satın Alma Bedeli (TL)</label>
+                        <input asp-for="SatinAlmaBedeli" type="number" step="0.01" class="form-control" placeholder="Örn: 800000.00" />
+                        <span asp-validation-for="SatinAlmaBedeli" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom flex-grow-1">Aracı Kaydet</button>
+                    <a class="btn btn-secondary-custom" asp-action="Index">İptal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

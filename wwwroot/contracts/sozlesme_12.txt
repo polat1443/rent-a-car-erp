@@ -1,0 +1,7 @@
+KİRALAMA SÖZLEŞMESİ - No: 12
+Tarih: 21.06.2026 19:47
+Müşteri: fatih mert (TC: 74859612365)
+Araç: 65lkm23 (ctroen berlimgo)
+Tutar: ₺11.250,00
+PDF Kütüphanesi hatası nedeniyle bu geçici sözleşme belgesi oluşturulmuştur.
+Hata Detayı: No appropriate font found for family name 'Arial'. Implement IFontResolver and assign to 'GlobalFontSettings.FontResolver' to use fonts. See https://docs.pdfsharp.net/link/font-resolving.html

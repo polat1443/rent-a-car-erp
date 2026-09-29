@@ -1,0 +1,83 @@
+@model IEnumerable<AracKiralamaApp.Models.Arac>
+@{
+    ViewData["Title"] = "Araç Listesi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="m-0">Araç Yönetimi</h1>
+        <p class="text-muted">Filodaki tüm araçları listeleyin, düzenleyin veya yeni araç ekleyin.</p>
+    </div>
+    <a class="btn btn-primary-custom" asp-action="Create">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Yeni Araç Ekle
+    </a>
+</div>
+
+<div class="custom-card">
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            Kayıtlı araç bulunmuyor. Yeni bir tane ekleyerek başlayın.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive table-container border-0">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Plaka</th>
+                        <th>Marka / Model</th>
+                        <th>Yıl</th>
+                        <th>Satın Alma Bedeli</th>
+                        <th>Günlük Fiyat</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge badge-custom badge-yellow font-monospace" style="font-size: 0.85rem; padding: 0.5em 0.85em;">@item.Plaka</span>
+                            </td>
+                            <td><strong>@item.Marka @item.Model</strong></td>
+                            <td>@item.Yil</td>
+                            <td>@item.SatinAlmaBedeli.ToString("C")</td>
+                            <td><strong>@item.GunlukFiyat.ToString("C")</strong></td>
+                            <td>
+                                @if (item.Durum == "Bos")
+                                {
+                                    <span class="badge badge-custom badge-yellow">Boşta</span>
+                                }
+                                else if (item.Durum == "Kirada")
+                                {
+                                    <span class="badge badge-custom badge-danger">Kirada</span>
+                                }
+                                else if (item.Durum == "Bakimda")
+                                {
+                                    <span class="badge badge-custom bg-secondary text-white">Bakımda</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-custom bg-secondary">@item.Durum</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a class="btn btn-secondary-custom btn-sm py-1 px-2" asp-action="Edit" asp-route-id="@item.AracId">Düzenle</a>
+                                    <a class="btn btn-danger-custom btn-sm py-1 px-2" asp-action="Delete" asp-route-id="@item.AracId">Sil</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

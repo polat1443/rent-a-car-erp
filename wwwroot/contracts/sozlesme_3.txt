@@ -1,0 +1,7 @@
+KİRALAMA SÖZLEŞMESİ - No: 3
+Tarih: 21.06.2026 19:41
+Müşteri: polat kaya (TC: 78945625896)
+Araç: 06XYZ987 (Renault Clio)
+Tutar: ₺750,00
+PDF Kütüphanesi hatası nedeniyle bu geçici sözleşme belgesi oluşturulmuştur.
+Hata Detayı: No appropriate font found for family name 'Arial'. Implement IFontResolver and assign to 'GlobalFontSettings.FontResolver' to use fonts. See https://docs.pdfsharp.net/link/font-resolving.html

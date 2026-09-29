@@ -1,0 +1,7 @@
+KİRALAMA SÖZLEŞMESİ - No: 5
+Tarih: 21.06.2026 19:43
+Müşteri: halit yılanlı (TC: 65478932141)
+Araç: 55lok55 (renoult megan)
+Tutar: ₺2.500,00
+PDF Kütüphanesi hatası nedeniyle bu geçici sözleşme belgesi oluşturulmuştur.
+Hata Detayı: No appropriate font found for family name 'Arial'. Implement IFontResolver and assign to 'GlobalFontSettings.FontResolver' to use fonts. See https://docs.pdfsharp.net/link/font-resolving.html
